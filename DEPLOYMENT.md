@@ -1,58 +1,60 @@
-# Deployment Guide
+# Deployment Guide (100% Free - No Credit Card)
 
-This guide will help you deploy your Django application to Render with a free PostgreSQL database.
+We will use **Neon.tech** for the Free Database (better than Render's temporary one) and **Render** for the hosting, doing it manually to avoid the payment screen.
 
-## Prerequisites
+## Step 1: Get a Free Database (Neon.tech)
 
-1.  **GitHub Account**: You need a GitHub account to host your code.
-2.  **Render Account**: You need a Render.com account to host the application and database.
+1.  Go to [Neon.tech](https://neon.tech/) and Sign Up (Free).
+2.  Create a new **Project**.
+3.  You will be shown a **Connection String**. It looks like this:
+    `postgres://user:password@ep-something.aws.neon.tech/neondb?sslmode=require`
+4.  **Copy this string**. You will need it in Step 3.
 
-## Step 1: Push to GitHub
+## Step 2: Push Code to GitHub
 
-1.  Initialize a Git repository (if you haven't already):
-    ```bash
-    git init
-    ```
-2.  Add files to staging:
+(If you haven't already)
+1.  Commit and push your latest changes:
     ```bash
     git add .
+    git commit -m "Ready for deployment"
+    git push origin main
     ```
-3.  Commit your changes:
+
+## Step 3: Deploy to Render (Manual Method)
+
+1.  Go to [Render Dashboard](https://dashboard.render.com/).
+2.  Click **New +** -> **Web Service**.
+3.  Select **Build and deploy from a Git repository**.
+4.  Connect your `BlockChain-Based-Voting-System` repository.
+5.  Scroll down to configure:
+    -   **Name**: `secure-vote` (or anything you like)
+    -   **Region**: Closest to you (e.g., Singapore or Oregon)
+    -   **Branch**: `main`
+    -   **Runtime**: `Python 3`
+    -   **Build Command**: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
+    -   **Start Command**: `gunicorn secure_vote.wsgi:application`
+6.  **Instance Type**: Select **Free** (It might be buried, make sure to click "Free").
+7.  **Environment Variables** (Click "Add Environment Variable"):
+    -   Key: `DATABASE_URL`
+    -   Value: *(Paste the Neon Connection String you copied in Step 1)*
+    -   Key: `PYTHON_VERSION`
+    -   Value: `3.9.0` (Recommended)
+    -   Key: `RENDER`
+    -   Value: `true`
+8.  Click **Create Web Service**.
+
+## Step 4: Create Superuser (Admin)
+
+Once the deployment finishes (Step 3 is green/Live):
+1.  In the Render Dashboard for your service, click the **Shell** tab (on the left).
+2.  Wait for the terminal to connect.
+3.  Type:
     ```bash
-    git commit -m "Prepare for deployment"
+    python manage.py createsuperuser
     ```
-4.  Create a new repository on GitHub (do not initialize with README/gitignore, just empty).
-5.  Link your local repository to GitHub:
-    ```bash
-    git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-    git branch -M main
-    git push -u origin main
-    ```
-
-## Step 2: Deploy to Render (The Easy Way with Blueprints)
-
-Since we created a `render.yaml` file, you can use Render Blueprints for automatic setup.
-
-1.  Go to your [Render Dashboard](https://dashboard.render.com/).
-2.  Click **New +** and select **Blueprint**.
-3.  Connect your GitHub account and select your repository.
-4.  Render will automatically detect the `render.yaml` file and show you the resources it will create:
-    -   **Service**: `secure-vote` (Web Service)
-    -   **Database**: `secure-vote-db` (PostgreSQL)
-5.  Click **Apply**.
-6.  Render will start building and deploying your application. It will also create the database and automatically link it to your app.
-
-## Step 3: Verify Deployment
-
-1.  Wait for the build to finish. It might take a few minutes.
-2.  Once deployed, you will see a URL (e.g., `https://secure-vote.onrender.com`).
-3.  Click the URL to access your live application.
+4.  Follow the prompts to create your admin account.
 
 ## Troubleshooting
 
--   **Database Connection**: The application is configured to automatically use the Render database when deployed. If you have issues, check the `Environment` tab in Render to ensure `DATABASE_URL` is set.
--   **Static Files**: We configured `Whitenoise` to serve static files. If styles are missing, check the build logs for `python manage.py collectstatic` errors.
--   **Admin User**: You will need to create a superuser on the production database. You can do this via the Render Shell:
-    1.  Go to your Web Service in Render.
-    2.  Click **Shell**.
-    3.  Run: `python manage.py createsuperuser`
+-   **Build Fail:** Check the "Logs" tab. If it says "Module not found", make sure `requirements.txt` is updated.
+-   **Database Error:** Ensure you copied the full connection string from Neon, including `sslmode=require`.
