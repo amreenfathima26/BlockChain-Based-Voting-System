@@ -7,3 +7,4 @@ pyngrok
 gunicorn
 dj-database-url
 whitenoise
+Pillow
