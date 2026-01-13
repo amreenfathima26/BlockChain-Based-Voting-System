@@ -1,0 +1,9 @@
+Django>=4.2
+psycopg2-binary
+requests
+groq
+pyngrok
+
+gunicorn
+dj-database-url
+whitenoise

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>📊 Candidate Analytics</h2>
+
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Stat Card 1 -->
+    <div class="card" style="text-align: center;">
+        <div
+            style="font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #818cf8, #e879f9); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            {{ vote_count }}</div>
+        <div style="color: var(--text-muted); font-weight: 600;">Total Secured Votes</div>
+    </div>
+
+    <!-- Stat Card 2 -->
+    <div class="card" style="text-align: center;">
+        <div
+            style="font-size: 3rem; font-weight: 800; color: {% if election.is_active and election %}#34d399{% else %}#ef4444{% endif %};">
+            {% if election.is_active and election %}Live{% else %}Ended{% endif %}
+        </div>
+        <div style="color: var(--text-muted); font-weight: 600;">Election Status</div>
+        <div style="font-size: 0.9rem; margin-top: 5px;">{{ election.title }}</div>
+    </div>
+
+    <!-- Stat Card 3 -->
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 3rem; font-weight: 800; color: #f472b6;">100%</div>
+        <div style="color: var(--text-muted); font-weight: 600;">Chain Integrity</div>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h3>🏆 Election Results</h3>
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+        <thead>
+            <tr>
+                <th
+                    style="text-align: left; padding: 1rem; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    Candidate</th>
+                <th
+                    style="text-align: left; padding: 1rem; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    Party</th>
+                <th
+                    style="text-align: right; padding: 1rem; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    Votes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for res in results %}
+            <tr>
+                <td style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500;">
+                    {{ res.name }}
+                    {% if candidate.user.username == res.name %}
+                    <span
+                        style="font-size: 0.7rem; background: rgba(79, 70, 229, 0.2); color: #818cf8; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">YOU</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-muted);">
+                    {{ res.party }}
+                </td>
+                <td
+                    style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: right; font-family: monospace; font-size: 1.1rem; color: #4ade80;">
+                    {{ res.count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="padding: 2rem; text-align: center; color: var(--text-muted);">No candidates
+                    found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h3>📈 Real-time Trend Analysis</h3>
+    <div style="height: 400px; position: relative;">
+        <canvas id="voteChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const electionId = "{{ election.id }}";
+
+        if (electionId) {
+            fetch(`/voting/api/data/${electionId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('voteChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Votes Recorded on Ledger',
+                                data: data.data,
+                                backgroundColor: [
+                                    'rgba(129, 140, 248, 0.6)',
+                                    'rgba(236, 72, 153, 0.6)',
+                                    'rgba(34, 197, 94, 0.6)',
+                                    'rgba(248, 113, 113, 0.6)'
+                                ],
+                                borderColor: [
+                                    '#818cf8',
+                                    '#ec4899',
+                                    '#22c55e',
+                                    '#f87171'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { labels: { color: '#94a3b8' } }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: { color: '#94a3b8', stepSize: 1 }
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: '#94a3b8' }
+                                }
+                            }
+                        }
+                    });
+                });
+        }
+    });
+</script>
+{% endblock %}

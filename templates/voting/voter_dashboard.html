@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; gap: 2rem; align-items: flex-start;">
+    <!-- Main Voting Area -->
+    <!-- Main Voting Area -->
+    <div style="flex: 2;">
+        <h2>🗳️ Active Elections</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Cast your immutable vote on the blockchain.</p>
+
+        {% if elections %}
+        {% for election in elections %}
+        <div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--primary);">
+            <div style="margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                <span
+                    style="background: rgba(34, 197, 94, 0.1); color: #4ade80; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; float: right;">LIVE
+                    ELECTION</span>
+                <h2 style="margin: 0; font-size: 1.5rem;">{{ election.title }}</h2>
+                <p style="color: var(--text-muted); margin-top: 0.5rem;">{{ election.description }}</p>
+            </div>
+
+            <h4 style="margin-bottom: 1rem; color: var(--text-muted);">Select a Candidate to Vote:</h4>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                {% for candidate in election.candidates.all %}
+                {% if candidate.is_approved %}
+                <div
+                    style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; text-align: center; transition: all 0.2s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👤</div>
+                    <h3 style="margin: 0.5rem 0;">{{ candidate.user.username }}</h3>
+                    <div
+                        style="color: #ec4899; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 1rem;">
+                        {{ candidate.party }}
+                    </div>
+                    <p
+                        style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; height: 3rem; overflow: hidden;">
+                        "{{ candidate.manifesto|truncatechars:60 }}"
+                    </p>
+
+                    <form method="post" action="{% url 'cast_vote' election.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="candidate" value="{{ candidate.id }}">
+                        <button type="submit" class="btn" style="width: 100%; font-size: 0.9rem; padding: 0.5rem;">
+                            Vote for {{ candidate.user.username|truncatechars:10 }}
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+                {% empty %}
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-muted);">
+                    No candidates approved for this election yet.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card" style="text-align: center; padding: 4rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+            <h3>No Active Elections</h3>
+            <p style="color: var(--text-muted);">You have voted in all live elections options.</p>
+            <p><a href="{% url 'block_explorer' %}" style="color: var(--primary);">View Public Ledger</a></p>
+        </div>
+        {% endif %}
+
+        <h3 style="margin-top: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">📜 Your Voting
+            History</h3>
+
+        {% if vote_history %}
+        <div class="card">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 0;">🗳️ Election</th>
+                        <th>📅 Date</th>
+                        <th>🔗 Block Index</th>
+                        <th>✅ Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vote in vote_history %}
+                    <tr>
+                        <td style="padding: 1rem 0; font-weight: 500;">{{ vote.election.title }}</td>
+                        <td style="color: var(--text-muted);">{{ vote.timestamp|date:"M d, Y H:i" }}</td>
+                        <td style="font-family: monospace; color: #818cf8;">#{{ vote.block_index }}</td>
+                        <td><span style="color: #4ade80;">Confirmed</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            No votes cast yet. Your history is empty.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- AI Side Panel -->
+    <div style="flex: 1; position: sticky; top: 100px;">
+        <div class="card" style="background: linear-gradient(160deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));">
+            <h3>🤖 AI Assistant</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted);">Powered by GROQ</p>
+            <div id="chat-box"
+                style="height: 300px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 1rem; padding: 1rem; overflow-y: auto;">
+                <div style="margin-bottom: 1rem;">
+                    <strong style="color: var(--secondary);">AI:</strong> <span style="font-size: 0.9rem;">Hello! I can
+                        explain how our blockchain ensures your vote is secure. Ask me anything!</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="chat-input" placeholder="Ask about voting..." style="margin-bottom: 0;">
+                <button class="btn" style="padding: 0.5rem 1rem;" onclick="sendMessage()">→</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const box = document.getElementById('chat-box');
+        const msg = input.value;
+        if (!msg) return;
+
+        // User Msg
+        box.innerHTML += `<div style="margin-bottom: 1rem; text-align: right;"><strong style="color: var(--primary);">You:</strong> <span style="font-size: 0.9rem;">${msg}</span></div>`;
+        input.value = '';
+        box.scrollTop = box.scrollHeight;
+
+        try {
+            const res = await fetch('/ai/ask/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+
+            // AI Msg
+            box.innerHTML += `<div style="margin-bottom: 1rem;"><strong style="color: var(--secondary);">AI:</strong> <span style="font-size: 0.9rem;">${data.response}</span></div>`;
+            box.scrollTop = box.scrollHeight;
+        } catch (e) {
+            box.innerHTML += `<div style="margin-bottom: 1rem; color: red;">Error contacting AI</div>`;
+        }
+    }
+</script>
+{% endblock %}

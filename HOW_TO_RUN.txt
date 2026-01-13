@@ -1,0 +1,52 @@
+HOW TO RUN "SECURE VOTE" ON A NEW SYSTEM
+========================================
+
+1. INSTALL PYTHON
+   - Make sure you have Python installed (Version 3.10 or newer recommended).
+   - During installation, check "Add Python to PATH".
+
+2. UNZIP THE PROJECT
+   - Extract the zip file to a folder (e.g., Desktop/secure_vote).
+
+3. OPEN TERMINAL / COMMAND PROMPT
+   - Open Command Prompt (search "cmd" in Windows start menu).
+   - Navigate to the project folder:
+     cd "path/to/extracted/folder"
+     (Example: cd C:\Users\YourName\Desktop\secure_vote)
+
+4. INSTALL DEPENDENCIES
+   - Run this command to install required libraries:
+     pip install -r requirements.txt
+
+5. SETUP DATABASE
+   - Run these commands one by one to set up the database:
+     python manage.py migrate
+
+6. RUN THE SERVER
+   - Start the website with:
+     python run_public.py runserver
+
+7. ACCESS THE SITE
+   - Open your web browser and go to:
+     http://127.0.0.1:8000
+
+---------------------------------------------------
+
+DEFAULT LOGIN CREDENTIALS:
+
+*** GOD MODE (Superadmin) ***
+Username: admin
+Password: admin123  (Re-enter this when accessing God Mode)
+
+*** VOTER ***
+Username: voter_01
+Password: pass123
+
+*** CANDIDATE ***
+Username: candidate_01
+Password: pass123
+
+---------------------------------------------------
+TROUBLESHOOTING:
+- If you see "Module not found", run `pip install -r requirements.txt` again.
+- If you forget a password, log in as 'admin', go to God Mode, and use the Eye/Save icons to reset it.

@@ -1,0 +1,21 @@
+databases:
+  - name: secure-vote-db
+    databaseName: secure_vote
+    user: secure_vote_user
+    plan: free
+
+services:
+  - type: web
+    name: secure-vote
+    env: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "gunicorn secure_vote.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: secure-vote-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4

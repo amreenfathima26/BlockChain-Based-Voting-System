@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_config.site_name|default:"SecureVote" }}{% endblock %}</title>
+
+    <!-- Favicon -->
+    {% if site_config.favicon %}
+    <link rel="icon" type="image/png" href="{{ site_config.favicon.url }}">
+    {% else %}
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    {% endif %}
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Default Global Fallbacks */
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #ec4899;
+            --dark-bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        /* DYNAMIC THEME ENGINE (God Mode) */
+
+        /* 1. ADMIN THEME */
+        body.theme-mode-admin,
+        body.theme-mode-guest {
+            background-color: #0f172a !important;
+            background-image:
+                radial-gradient(at 0% 0%, #334155 0px, transparent 50%),
+                radial-gradient(at 100% 0%, #0f172a 0px, transparent 50%),
+                linear-gradient(to bottom right, #0f172a, #1e293b) !important;
+            background-attachment: fixed !important;
+            --primary: #6366f1;
+            --secondary: #d946ef;
+        }
+
+        /* 2. VOTER THEME */
+        body.theme-mode-voter {
+            background-color: #064e3b !important;
+            background-image:
+                radial-gradient(at 0% 0%, #34d399 0px, transparent 50%),
+                radial-gradient(at 100% 100%, #064e3b 0px, transparent 50%),
+                linear-gradient(to bottom right, #065f46, #064e3b) !important;
+            background-attachment: fixed !important;
+            --primary: #22d3ee;
+            --secondary: #34d399;
+        }
+
+        /* 3. CANDIDATE THEME */
+        body.theme-mode-candidate {
+            background-color: #451a03 !important;
+            background-image:
+                radial-gradient(at 0% 0%, #fbbf24 0px, transparent 50%),
+                radial-gradient(at 100% 100%, #7c2d12 0px, transparent 50%),
+                linear-gradient(to bottom right, #78350f, #451a03) !important;
+            background-attachment: fixed !important;
+            --primary: #fbbf24;
+            --secondary: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Glassmorphism Header */
+        header {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border-bottom: var(--glass-border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #818cf8, #e879f9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        nav a {
+            margin-left: 20px;
+            font-weight: 500;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a:hover,
+        nav a.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        .god-mode-btn {
+            background: linear-gradient(to right, #f43f5e, #e11d48);
+            color: white !important;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* Glass Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2,
+        .card h3 {
+            margin-top: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Modern Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(var(--primary), 0.5);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Form Inputs */
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: var(--glass-border);
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3), 0 0 15px rgba(79, 70, 229, 0.2);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        /* Errors */
+        .errorlist {
+            color: #ef4444;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
+            font-size: 0.9rem;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Blockchain Viz */
+        .block-chain-vis {
+            display: flex;
+            overflow-x: auto;
+            gap: 1.5rem;
+            padding: 2rem 0;
+            scroll-behavior: smooth;
+        }
+
+        .block-node {
+            width: 300px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            border: var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 12px;
+            position: relative;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .block-node:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .block-node::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .block-node:last-child::after {
+            content: none;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            border-bottom: var(--glass-border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: var(--glass-border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Floating elements */
+        .floating-orb {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: var(--primary);
+            filter: blur(100px);
+            opacity: 0.1;
+            z-index: -1;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(50px, 50px);
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body
+    class="theme-mode-{% if user.is_superuser or user.role == 'admin' %}admin{% elif user.role == 'candidate' %}candidate{% else %}voter{% endif %}">
+
+    <div class="floating-orb" style="top: -50px; left: -50px;"></div>
+    <div class="floating-orb" style="bottom: 50px; right: 50px; background: var(--secondary); animation-delay: -5s;">
+    </div>
+
+    <header>
+        <div class="logo">
+            <span style="font-size: 1.5rem;">⛓️</span> {{ site_config.site_name|default:"SecureVote" }}
+        </div>
+        <nav>
+            {% if user.is_authenticated %}
+            <span class="user-badge"
+                style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px; font-size: 0.9rem; margin-right: 15px;">
+                {{ user.username }} • {{ user.role|title }}
+            </span>
+
+            {% if user.is_superuser %}
+            <a href="{% url 'superadmin_dashboard' %}" class="god-mode-btn">👑 God Mode</a>
+            {% endif %}
+
+            <!-- Explicit Superadmin Login Link for Testing -->
+            {% if user.is_superuser %}
+            <!-- <a href="{% url 'superadmin_login' %}">LoginTest</a> -->
+            {% endif %}
+
+            <a href="{% url 'block_explorer' %}">🌍 Ledger</a>
+            <a href="{% url 'dashboard' %}">📊 Dashboard</a>
+            <a href="{% url 'logout' %}" style="color: #ef4444;">🚪 Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            {% if site_config.allow_registration %}
+            <a href="{% url 'register' %}" class="btn" style="padding: 0.5rem 1rem; border-radius: 6px;">Get Started</a>
+            {% endif %}
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="container">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="card"
+            style="background: rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.3); padding: 1rem; margin-bottom: 2rem;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer
+        style="text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.8rem; opacity: 0.5; letter-spacing: 0.5px;">
+        &copy; GV-Blockchain 2025
+    </footer>
+
+    <!-- SECURITY INDICATOR BOX -->
+    <div id="security-indicator"
+        class="{% if site_config.security_encryption_active %}secure{% else %}insecure{% endif %}">
+        <span class="indicator-dot"></span>
+        <span class="indicator-text">
+            SHA-256 #Metamask1G8v Encryption
+            {% if site_config.security_encryption_active %}
+            Active
+            {% else %}
+            Inactive
+            {% endif %}
+        </span>
+    </div>
+
+    <style>
+        #security-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 20px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-family: 'Inter', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+
+        #security-indicator:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        /* GREEN STATE (Active) */
+        #security-indicator.secure {
+            background: rgba(6, 78, 59, 0.4);
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 10px rgba(34, 197, 94, 0.1) inset;
+        }
+
+        #security-indicator.secure .indicator-dot {
+            background-color: #4ade80;
+            box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80;
+            animation: pulse-green 2s infinite;
+        }
+
+        #security-indicator.secure .indicator-text {
+            color: #d1fae5;
+            text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        /* RED STATE (Inactive) */
+        #security-indicator.insecure {
+            background: rgba(127, 29, 29, 0.4);
+            border-color: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2), 0 0 10px rgba(239, 68, 68, 0.1) inset;
+        }
+
+        #security-indicator.insecure .indicator-dot {
+            background-color: #ef4444;
+            box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+            animation: pulse-red 2s infinite;
+        }
+
+        #security-indicator.insecure .indicator-text {
+            color: #fee2e2;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        @keyframes pulse-green {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse-red {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <div class="card"
+        style="max-width: 400px; width: 100%; text-align: center; border: 1px solid #f43f5e; box-shadow: 0 0 30px rgba(244, 63, 94, 0.2);">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🔒</div>
+        <h2 style="color: #f43f5e; margin-bottom: 0.5rem;">Security Checkpoint</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Please verify your password to enter God Mode.</p>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div
+            style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 0.5rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.9rem;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="margin-bottom: 1.5rem;">
+                <input type="password" name="password" placeholder="Enter your password" required autofocus
+                    style="text-align: center; font-size: 1.1rem; padding: 1rem; border-color: #f43f5e;">
+            </div>
+            <button type="submit" class="btn"
+                style="width: 100%; background: linear-gradient(to right, #f43f5e, #e11d48);">
+                🚀 Enter God Mode
+            </button>
+        </form>
+
+        <div style="margin-top: 1.5rem;">
+            <a href="{% url 'admin_dashboard' %}" style="font-size: 0.9rem; color: var(--text-muted);">Cancel and
+                Return</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

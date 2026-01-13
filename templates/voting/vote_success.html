@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto; text-align: center;">
+    <div id="mining-phase">
+        <h2 style="margin-bottom: 2rem;">⛏️ Mining Vote Block...</h2>
+        <div class="spinner" style="margin: 2rem auto;"></div>
+        <p id="mining-text" style="color: var(--text-muted); font-family: monospace;">Calculating Nonce...</p>
+    </div>
+
+    <div id="success-phase" style="display: none; animation: fadeIn 1s;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+        <h2 style="color: #4ade80;">Vote Recorded on Blockchain</h2>
+        <p style="color: var(--text-muted);">Your transaction has been securely hashed and added to the ledger.</p>
+
+        <div
+            style="text-align: left; background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 8px; margin: 2rem 0; font-family: monospace; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="margin-bottom: 1rem;">
+                <span style="color: #818cf8;">📦 BLOCK INDEX:</span>
+                <span style="float: right;">#{{ block.index }}</span>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <span style="color: #818cf8;">📅 TIMESTAMP:</span>
+                <span style="float: right;">{{ block.timestamp }}</span>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <span style="color: #818cf8;">🔨 NONCE (PoW):</span>
+                <span style="float: right;">{{ block.nonce }}</span>
+            </div>
+            <div style="margin-bottom: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                <span style="color: #ec4899;">🔗 PREVIOUS HASH:</span><br>
+                <div style="word-break: break-all; font-size: 0.9rem; color: var(--text-muted); margin-top: 5px;">{{
+                    block.previous_hash }}</div>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <span style="color: #22c55e;">#️⃣ CURRENT HASH:</span><br>
+                <div style="word-break: break-all; font-size: 0.9rem; color: #fff; margin-top: 5px; font-weight: bold;">
+                    {{ block.hash }}</div>
+            </div>
+            <div>
+                <span style="color: #f472b6;">📄 DATA (Encrypted):</span><br>
+                <div style="word-break: break-all; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">{{
+                    block.data }}</div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+            <a href="{% url 'voter_dashboard' %}" class="btn">🔙 Return to Dashboard</a>
+            <a href="{% url 'block_explorer' %}" class="btn" style="background: #334155;">🌍 View Public Ledger</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255, 255, 255, 0.1);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const texts = [
+            "Calculating SHA-256 Hash...",
+            "Verifying Chain Integrity...",
+            "consensus_v2.audit()...",
+            "Proof of Work Found!",
+            "Broadcasting to Nodes..."
+        ];
+        let i = 0;
+        const textEl = document.getElementById('mining-text');
+
+        const interval = setInterval(() => {
+            textEl.innerText = texts[i];
+            i++;
+            if (i >= texts.length) {
+                clearInterval(interval);
+                document.getElementById('mining-phase').style.display = 'none';
+                document.getElementById('success-phase').style.display = 'block';
+            }
+        }, 800);
+    });
+</script>
+{% endblock %}

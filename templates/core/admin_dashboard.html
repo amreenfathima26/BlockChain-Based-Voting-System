@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>🛡️ Admin Command Center</h2>
+    <div style="display: flex; gap: 1rem;">
+        {% if user.is_superuser %}
+        <a href="{% url 'superadmin_login' %}" class="btn"
+            style="background: linear-gradient(to right, #f43f5e, #e11d48); box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);">👑
+            God Mode</a>
+        {% endif %}
+        <a href="{% url 'manage_elections' %}" class="btn" style="background: #334155;">🗳️ Manage Elections</a>
+        <a href="{% url 'create_election' %}" class="btn">➕ Create Election</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+
+    <!-- Left Col -->
+    <div>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>🔗 Live Blockchain Ledger</h3>
+                <span style="font-size: 0.8rem; color: #4ade80;">🟢 Network Active</span>
+            </div>
+
+            <div class="block-chain-vis">
+                {% for block in blocks %}
+                <div class="block-node">
+                    <div
+                        style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; position: relative;">
+                        <div style="display: flex; flex-direction: column;">
+                            <strong>📦 Block #{{ block.index }}</strong>
+                            <span style="font-family: monospace; opacity: 0.5; font-size: 0.8rem;">{{
+                                block.timestamp|date:"H:i:s" }}</span>
+                        </div>
+
+                        {% if user.is_superuser or user.role == 'admin' %}
+                        <a href="{% url 'delete_block' block.id %}"
+                            style="position: absolute; top: -5px; right: -5px; color: #ef4444; text-decoration: none; font-size: 1rem; font-weight: bold; padding: 5px; z-index: 10;"
+                            onclick="return confirm('⚠️ DANGER: Deleting this block will remove the associated vote record. Count will be reduced. Proceed?');"
+                            title="Delete Block">✕</a>
+                        {% endif %}
+                    </div>
+
+                    <div
+                        style="margin: 0.5rem 0; border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">#️⃣ HASH</div>
+                        <div style="font-family: monospace; font-size: 0.8rem; word-break: break-all; color: #818cf8;">
+                            {{ block.hash|truncatechars:20 }}
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.8rem;">
+                        <span style="color: var(--text-muted);">🔗 Prev:</span>
+                        <span style="font-family: monospace;">{{ block.previous_hash|truncatechars:10 }}</span>
+                    </div>
+
+                    <div
+                        style="margin-top: 0.5rem; font-size: 0.8rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px;">
+                        <code>{{ block.data|truncatechars:40 }}</code>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>⏳ Pending User Approvals</h3>
+            {% if pending_users %}
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1);">👤
+                            Identity</th>
+                        <th style="color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1);">🔑 Role
+                            Request</th>
+                        <th style="color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.1);">⚙️ Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p_user in pending_users %}
+                    <tr>
+                        <td style="padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <div>{{ p_user.username }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">{{ p_user.email }}</div>
+                        </td>
+                        <td style="padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <span
+                                style="background: rgba(129, 140, 248, 0.2); color: #818cf8; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
+                                {{ p_user.role|title }}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <a href="{% url 'approve_user' p_user.id %}" class="btn"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: linear-gradient(to right, #22c55e, #16a34a);">✅
+                                Approve</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                All identities verified. System secure.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Col -->
+    <div>
+        <div class="card" style="border: 1px solid #f87171; background: rgba(239, 68, 68, 0.05);">
+            <h3 style="color: #f87171;">🚨 Fraud Alerts</h3>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">🤖 AI Analysis Active</div>
+            <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                <li
+                    style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center;">
+                    <span style="font-size: 1.2rem; margin-right: 10px;">🛡️</span>
+                    <div>
+                        <div style="font-weight: bold;">Chain Integrity OK</div>
+                        <div style="font-size: 0.8rem;">No anomalies detected in last 100 blocks.</div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>📊 Election Health</h3>
+
+            <div style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>Voter Participation</span>
+                    <span>{{ site_config.voter_participation_rate }}%</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                    <div
+                        style="width: {{ site_config.voter_participation_rate }}%; height: 100%; background: var(--primary); border-radius: 3px;">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>System Load</span>
+                    <span>{{ site_config.system_load_percentage }}%</span>
+                </div>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px;">
+                    <div
+                        style="width: {{ site_config.system_load_percentage }}%; height: 100%; background: var(--secondary); border-radius: 3px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

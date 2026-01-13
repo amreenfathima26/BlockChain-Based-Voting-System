@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2
+                style="font-size: 2.5rem; background: linear-gradient(to right, #f43f5e, #fb7185); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                👑 God Mode</h2>
+            <p style="color: var(--text-muted);">Global System Configuration & Override</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn" style="background: rgba(255,255,255,0.1);">⬅️ Back to
+            Admin</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div
+        style="padding: 1rem; margin-bottom: 2rem; border-radius: 8px; background: {% if message.tags == 'error' %}rgba(239, 68, 68, 0.2){% else %}rgba(34, 197, 94, 0.2){% endif %}; border: 1px solid {% if message.tags == 'error' %}#ef4444{% else %}#22c55e{% endif %};">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- 1. GENERAL SETTINGS -->
+    <form method="post" enctype="multipart/form-data" class="card" style="border-left: 4px solid #f43f5e;">
+        {% csrf_token %}
+        <input type="hidden" name="form_id" value="general_settings">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex-grow: 1; margin-right: 2rem;">
+                <h3 style="margin-bottom: 1rem;">🌍 General Settings</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; color: var(--text-muted); margin-bottom: 0.5rem;">Site Name</label>
+                    {{ form.site_name }}
+                </div>
+                <!-- Favicon Upload -->
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; color: var(--text-muted); margin-bottom: 0.5rem;">Favicon
+                        (Image)</label>
+                    <input type="file" name="favicon" accept="image/png, image/jpeg, image/x-icon"
+                        style="padding: 0.5rem;">
+                    {% if form.instance.favicon %}
+                    <div style="margin-top: 5px; font-size: 0.8rem; color: #aaa;">Current: <a
+                            href="{{ form.instance.favicon.url }}" target="_blank" style="color: #6366f1;">{{
+                            form.instance.favicon.name }}</a></div>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display: block; color: var(--text-muted); margin-bottom: 0.5rem;">GROQ API Key
+                        (Hidden)</label>
+                    {{ form.groq_api_key }}
+                </div>
+            </div>
+            <button type="submit" class="btn" style="height: fit-content; margin-top: 10px;">💾 Apply</button>
+        </div>
+    </form>
+
+    <!-- 2. SYSTEM CONTROLS -->
+    <form method="post" class="card" style="border-left: 4px solid #f87171;">
+        {% csrf_token %}
+        <input type="hidden" name="form_id" value="system_controls">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin-bottom: 1rem;">🔒 System Controls</h3>
+                <div style="display: flex; gap: 2rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        {{ form.maintenance_mode }}
+                        <span style="color: #f87171; font-weight: bold;">Maintenance Mode</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        {{ form.allow_registration }}
+                        <span>Allow New Registrations</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn" style="background: #334155;">💾 Update Controls</button>
+        </div>
+    </form>
+
+    <!-- 2.5 SECURITY OVERRIDE (New God Mode Feature) -->
+    <form method="post" class="card" style="border-left: 4px solid #8b5cf6;">
+        {% csrf_token %}
+        <input type="hidden" name="form_id" value="security_controls">
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">
+                    🔐 Security Visualization Override
+                    <span
+                        style="font-size: 0.7rem; background: #8b5cf6; padding: 2px 6px; border-radius: 4px; color: white;">GOD
+                        ONLY</span>
+                </h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">
+                    Force the global encryption indicator to show as "Secure" (Green) or "Insecure" (Red) across all
+                    client sessions on this device.
+                </p>
+            </div>
+
+            <label class="toggle-switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                {% if form.instance.security_encryption_active %}
+                <input type="checkbox" name="security_encryption_active" checked onchange="this.form.submit()"
+                    style="opacity: 0; width: 0; height: 0;">
+                {% else %}
+                <input type="checkbox" name="security_encryption_active" onchange="this.form.submit()"
+                    style="opacity: 0; width: 0; height: 0;">
+                {% endif %}
+                <span class="slider"
+                    style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 34px;">
+                    <span class="slider-knob"
+                        style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </span>
+            </label>
+        </div>
+
+        <style>
+            .slider {
+                background-color: #ef4444;
+            }
+
+            input:checked+.slider {
+                background-color: #22c55e !important;
+            }
+
+            input:focus+.slider {
+                box-shadow: 0 0 1px #22c55e;
+            }
+
+            input:checked+.slider .slider-knob {
+                transform: translateX(26px);
+            }
+        </style>
+    </form>
+
+    <!-- 3. DASHBOARD SIMULATION -->
+    <form method="post" class="card" style="border-left: 4px solid #34d399;">
+        {% csrf_token %}
+        <input type="hidden" name="form_id" value="dashboard_simulation">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div style="flex-grow: 1; margin-right: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📊 Dashboard Simulation</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; color: var(--text-muted); margin-bottom: 0.5rem;">Voter
+                            Participation (%)</label>
+                        <input type="number" name="voter_participation_rate"
+                            value="{{ form.voter_participation_rate.value|default:45 }}" step="1" min="0" max="100"
+                            style="width: 100%; padding: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: white;">
+                    </div>
+                    <div>
+                        <label style="display: block; color: var(--text-muted); margin-bottom: 0.5rem;">System Load
+                            (%)</label>
+                        <input type="number" name="system_load_percentage"
+                            value="{{ form.system_load_percentage.value|default:12 }}" step="1" min="0" max="100"
+                            style="width: 100%; padding: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: white;">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn" style="height: fit-content; margin-top: 10px; background: #059669;">💾
+                Update Stats</button>
+        </div>
+    </form>
+
+    <!-- 4. USER MANAGEMENT -->
+    <div style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem;">
+        <h3 style="margin-bottom: 2rem;">👥 Global User Management</h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+            <!-- Create User -->
+            <form method="post" class="card" style="margin-bottom: 0; border-left: 4px solid #facc15;">
+                {% csrf_token %}
+                <input type="hidden" name="form_id" value="create_user">
+                <h4 style="margin-bottom: 1rem;">➕ Create New Identity</h4>
+
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="email" name="email" placeholder="Email Address" required>
+                <input type="password" name="password" placeholder="Password" required>
+
+                <select name="role"
+                    style="background: rgba(15, 23, 42, 0.5); width: 100%; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 6px; color: white; margin-bottom: 1rem;">
+                    <option value="voter">Voter</option>
+                    <option value="candidate">Candidate</option>
+                </select>
+
+                <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; cursor: pointer;">
+                    <input type="checkbox" name="auto_approve" checked style="width: auto;">
+                    <span>Auto-Approve User</span>
+                </label>
+
+                <button type="submit" class="btn" style="width: 100%; background: #facc15; color: #000;">Create
+                    User</button>
+            </form>
+
+            <!-- User List -->
+            <div class="card" style="margin-bottom: 0; max-height: 500px; overflow-y: auto;">
+                <h4 style="margin-bottom: 1rem;">📋 Managed Users ({{ all_users.count }})</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="text-align: left; color: var(--text-muted);">
+                            <th style="padding-bottom: 0.5rem;">User</th>
+                            <th style="padding-bottom: 0.5rem;">Role</th>
+                            <th style="padding-bottom: 0.5rem;">Status</th>
+                            <th style="padding-bottom: 0.5rem; width: 250px;">Security / Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in all_users %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 0.5rem 0;">
+                                <div style="font-weight: bold;">{{ u.username }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ u.email }}</div>
+                            </td>
+                            <td style="padding: 0.5rem 0;">
+                                <span
+                                    style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
+                                    {{ u.role|title }}
+                                </span>
+                            </td>
+                            <td style="padding: 0.5rem 0;">
+                                {% if u.is_approved %}
+                                <span style="color: #4ade80;">Active</span>
+                                {% else %}
+                                <span style="color: #facc15;">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.5rem 0;">
+                                <div style="display: flex; gap: 10px; align-items: center;">
+
+                                    <!-- Password Reset Form -->
+                                    <form method="post"
+                                        style="display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.2); padding: 2px; border-radius: 4px;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_id" value="change_password">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+
+                                        <div style="position: relative;">
+                                            <input type="password" name="new_password" placeholder="New Pass"
+                                                id="pass_{{ u.id }}"
+                                                style="width: 100px; padding: 4px; font-size: 0.8rem; border: none; background: transparent; color: white;">
+                                            <button type="button" onclick="togglePass('pass_{{ u.id }}')"
+                                                style="position: absolute; right: 0; top: 0; bottom: 0; background: none; border: none; cursor: pointer; color: #aaa; padding: 0 4px;">
+                                                👁️
+                                            </button>
+                                        </div>
+                                        <button type="submit" style="background: none; border: none; cursor: pointer;"
+                                            title="Save Password">💾</button>
+                                    </form>
+
+                                    <div style="height: 20px; border-left: 1px solid rgba(255,255,255,0.1);"></div>
+
+                                    {% if not u.is_approved %}
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_id" value="approve_user">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit"
+                                            style="background: none; border: none; cursor: pointer; font-size: 1.1rem;"
+                                            title="Approve">✅</button>
+                                    </form>
+                                    {% endif %}
+
+                                    <div
+                                        style="height: 20px; border-left: 1px solid rgba(255,255,255,0.1); margin: 0 5px;">
+                                    </div>
+
+                                    <form method="post" style="display: inline;"
+                                        onsubmit="return confirm('Forcefully logout user {{ u.username }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_id" value="force_logout">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit"
+                                            style="background: none; border: none; cursor: pointer; font-size: 1.1rem;"
+                                            title="Force Logout">🚪
+                                        </button>
+                                    </form>
+
+                                    <form method="post" style="display: inline;"
+                                        onsubmit="return confirm('Delete user {{ u.username }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_id" value="delete_user">
+                                        <input type="hidden" name="user_id" value="{{ u.id }}">
+                                        <button type="submit"
+                                            style="background: none; border: none; cursor: pointer; font-size: 1.1rem;"
+                                            title="Delete">🗑️</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        color: white;
+    }
+
+    input[type="color"] {
+        background: none;
+        border: none;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    function togglePass(id) {
+        var x = document.getElementById(id);
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    }
+</script>
+{% endblock %}

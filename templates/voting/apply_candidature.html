@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2>Register Candidature</h2>
+    <p style="color: var(--text-muted);">Apply to run in an active election.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn" style="margin-top: 1rem;">Submit Application</button>
+    </form>
+</div>
+{% endblock %}

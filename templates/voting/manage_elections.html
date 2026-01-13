@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>🏛️ Election Operations</h2>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Manage Elections -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>🚀 Active Elections</h3>
+            <a href="{% url 'admin_add_candidate' %}" class="btn" style="background: #334155; font-size: 0.8rem;">+ Add
+                Candidate Manually</a>
+        </div>
+        <table style="width: 100%; margin-bottom: 2rem;">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for election in elections %}
+                {% if election.is_active %}
+                <tr>
+                    <td>{{ election.title }}</td>
+                    <td><span style="color: #4ade80;">● Active</span></td>
+                    <td>
+                        <a href="{% url 'end_election' election.id %}" class="btn"
+                            style="background: #ef4444; padding: 0.3rem 0.6rem; font-size: 0.8rem;">Stop Election</a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr>
+                    <td colspan="3">No active elections.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>🏁 Completed Elections</h3>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Report</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for election in elections %}
+                {% if not election.is_active %}
+                <tr>
+                    <td>{{ election.title }}</td>
+                    <td><span style="color: #ef4444;">Ended</span></td>
+                    <td>
+                        <!-- Reuse Candidate Dashboard link for now as it has charts -->
+                        <a href="{% url 'candidate_dashboard' %}?election_id={{ election.id }}" class="btn"
+                            style="background: #334155; padding: 0.3rem 0.6rem; font-size: 0.8rem;">View Results</a>
+                        <a href="{% url 'delete_election' election.id %}" class="btn"
+                            style="background: #be123c; padding: 0.3rem 0.6rem; font-size: 0.8rem; margin-left: 5px;"
+                            onclick="return confirm('Are you sure you want to delete this election permanently?');">Delete</a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr>
+                    <td colspan="3">No active elections.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approve Candidates -->
+    <div class="card">
+        <h3>Pending Candidate Approvals</h3>
+        {% if pending_candidates %}
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Candidate</th>
+                    <th>Election</th>
+                    <th>Party</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cand in pending_candidates %}
+                <tr>
+                    <td>{{ cand.user.username }}</td>
+                    <td>{{ cand.election.title }}</td>
+                    <td>{{ cand.party }}</td>
+                    <td>
+                        <a href="{% url 'approve_candidate' cand.id %}" class="btn"
+                            style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Approve</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: var(--text-muted);">No pending candidate applications.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

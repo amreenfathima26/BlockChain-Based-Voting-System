@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 4rem auto;">
+    <h2 style="text-align: center; margin-bottom: 0.5rem;">Join the Network</h2>
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Secure Digital Identity Creation</p>
+
+    <div
+        style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        ℹ️ <strong>Identity Verification:</strong> Your account will require administrative consensus (approval) before
+        accessing the ledger.
+    </div>
+
+    <form method="post" id="reg-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <!-- Blockchain Visualizer -->
+        <div
+            style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">GENERATED WALLET ADDRESS</div>
+            <div id="wallet-addr" style="font-family: monospace; color: #4ade80; word-break: break-all; opacity: 0.5;">
+                0x0000000000000000000000000000000000000000</div>
+        </div>
+
+        <button type="submit" class="btn" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            Submit Identity & Join Chain
+        </button>
+    </form>
+
+    <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+        Already verified? <a href="{% url 'login' %}" style="color: var(--primary); font-weight: 600;">Login</a>
+    </p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Simulating wallet address generation from username
+        const usernameInput = document.querySelector('input[name="username"]');
+        const walletDisplay = document.getElementById('wallet-addr');
+
+        if (usernameInput) {
+            usernameInput.addEventListener('input', function (e) {
+                const val = e.target.value;
+                if (val.length > 0) {
+                    // Simple hash for visual effect
+                    let hash = '0x';
+                    for (let i = 0; i < 40; i++) {
+                        hash += (val.charCodeAt(i % val.length) * (i + 1)).toString(16).substr(-1);
+                    }
+                    walletDisplay.innerText = hash.toLowerCase();
+                    walletDisplay.style.opacity = '1';
+                } else {
+                    walletDisplay.innerText = '0x0000000000000000000000000000000000000000';
+                    walletDisplay.style.opacity = '0.5';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
