@@ -32,13 +32,13 @@ We will use **Neon.tech** for the Free Database (better than Render's temporary 
     -   **Branch**: `main`
     -   **Runtime**: `Python 3`
     -   **Build Command**: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
-    -   **Start Command**: `gunicorn secure_vote.wsgi:application`
-6.  **Instance Type**: Select **Free** (It might be buried, make sure to click "Free").
+    -   **Start Command**: `gunicorn secure_vote.wsgi:application`  <-- **IMPORTANT: COPY THIS EXACTLY**
+6.  **Instance Type**: Select **Free**.
 7.  **Environment Variables** (Click "Add Environment Variable"):
     -   Key: `DATABASE_URL`
-    -   Value: *(Paste the Neon Connection String you copied in Step 1)*
+    -   Value: *(Paste the Neon Connection String)*
     -   Key: `PYTHON_VERSION`
-    -   Value: `3.9.0` (Recommended)
+    -   Value: `3.10.11`
     -   Key: `RENDER`
     -   Value: `true`
 8.  Click **Create Web Service**.
